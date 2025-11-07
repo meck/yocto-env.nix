@@ -1,7 +1,8 @@
-{ pkgsForInteractiveShell
-, pkgsForYocto
-, withPython2
-, usesInclusiveLanguage
+{
+  pkgsForInteractiveShell,
+  pkgsForYocto,
+  withPython2,
+  usesInclusiveLanguage,
 }:
 
 let
@@ -9,42 +10,48 @@ let
 
   fhs = pkgsForInteractiveShell.buildFHSEnvBubblewrap {
     name = "yocto-env";
-    targetPkgs = pkgs: (with pkgsForYocto; let
-      libxcrypt = pkgsForYocto.libxcrypt or null; # Nixpkgs 20.03
-      rpcsvc-proto = pkgsForYocto.rpcsvc-proto or null; # Nixpkgs 20.03
-      util-linux = pkgsForYocto.util-linux or pkgsForYocto.utillinux; # Nixpkgs 20.09
-    in
-    [
-      attr
-      bc
-      binutils
-      bzip2
-      chrpath
-      cpio
-      diffstat
-      expect
-      file
-      gcc
-      gdb
-      git
-      gnumake
-      hostname
-      kconfig-frontends
-      libxcrypt
-      lz4
-      ncurses
-      patch
-      perl
-      python3
-      rpcsvc-proto
-      unzip
-      util-linux
-      wget
-      which
-      xz
-      zlib
-      zstd
-    ] ++ lib.lists.optionals withPython2 [ python2 ]);
+    targetPkgs =
+      pkgs:
+      (
+        with pkgsForYocto;
+        let
+          libxcrypt = pkgsForYocto.libxcrypt or null; # Nixpkgs 20.03
+          rpcsvc-proto = pkgsForYocto.rpcsvc-proto or null; # Nixpkgs 20.03
+          util-linux = pkgsForYocto.util-linux or pkgsForYocto.utillinux; # Nixpkgs 20.09
+        in
+        [
+          attr
+          bc
+          binutils
+          bzip2
+          chrpath
+          cpio
+          diffstat
+          expect
+          file
+          gcc
+          gdb
+          git
+          gnumake
+          hostname
+          kconfig-frontends
+          libxcrypt
+          lz4
+          ncurses
+          patch
+          perl
+          python3
+          rpcsvc-proto
+          unzip
+          util-linux
+          wget
+          which
+          xz
+          zlib
+          zstd
+        ]
+        ++ lib.lists.optionals withPython2 [ python2 ]
+      );
     multiPkgs = null;
     extraOutputsToInstall = [ "dev" ];
     profile =
@@ -63,8 +70,8 @@ let
         ];
 
         exports =
-          (builtins.attrValues (builtins.mapAttrs (n: v: "export ${n}= \"${v}\"") setVars)) ++
-          (builtins.map (v: "export ${v}") exportVars);
+          (builtins.attrValues (builtins.mapAttrs (n: v: "export ${n}= \"${v}\"") setVars))
+          ++ (builtins.map (v: "export ${v}") exportVars);
 
         passthroughVars = (builtins.attrNames setVars) ++ exportVars;
 
@@ -94,7 +101,8 @@ let
 
         # source the config for bibake equal to --postread
         export BBPOSTCONF="${nixconf}"
-      '' + lib.strings.optionalString (! usesInclusiveLanguage) ''
+      ''
+      + lib.strings.optionalString (!usesInclusiveLanguage) ''
         # keep compatibility with version earlier to kirkstone
         export BB_ENV_EXTRAWHITE="$BB_ENV_PASSTHROUGH_ADDITIONS"
       '';

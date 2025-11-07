@@ -2,24 +2,36 @@
   description = "Yocto Project - Development Environment";
 
   inputs.nixpkgs_stable.url = "nixpkgs/release-25.05";
-  inputs.nixpkgs_19_09 = { url = "nixpkgs/release-19.09"; flake = false; };
+  inputs.nixpkgs_19_09 = {
+    url = "nixpkgs/release-19.09";
+    flake = false;
+  };
 
-  outputs = { self, ... }@inputs:
+  outputs =
+    { self, ... }@inputs:
     let
-      supportedSystems = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
+      supportedSystems = [
+        "x86_64-linux"
+        "x86_64-darwin"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
       forAllSystems = inputs.nixpkgs_stable.lib.genAttrs supportedSystems;
     in
     {
-      devShells = forAllSystems (system:
+      devShells = forAllSystems (
+        system:
         let
           pkgs_stable = import inputs.nixpkgs_stable { inherit system; };
           pkgs_19_09 = import inputs.nixpkgs_19_09 { inherit system; };
           mkYoctoEnv =
-            { pkgsForInteractiveShell ? pkgs_stable
-            , pkgsForYocto ? pkgsForInteractiveShell
-            , withPython2 ? false
-            , usesInclusiveLanguage ? true
-            }: import ./yocto-env.nix {
+            {
+              pkgsForInteractiveShell ? pkgs_stable,
+              pkgsForYocto ? pkgsForInteractiveShell,
+              withPython2 ? false,
+              usesInclusiveLanguage ? true,
+            }:
+            import ./yocto-env.nix {
               inherit
                 pkgsForInteractiveShell
                 pkgsForYocto
@@ -45,7 +57,7 @@
 
           langdale = self.devShells.${system}.mickledore; # 4.1 - October 2022
 
-          kirkstone = self.devShells.${system}.langdale;  # 4.0 - May 2022
+          kirkstone = self.devShells.${system}.langdale; # 4.0 - May 2022
 
           honister = self.devShells.${system}.kirkstone.override { usesInclusiveLanguage = false; }; # 3.4 - October 2021
 
@@ -69,20 +81,26 @@
           sumo = self.devShells.${system}.thud; # 2.5 - April 2018
 
           rocko = self.devShells.${system}.sumo; # 2.4 - Oct 2017
-        });
+        }
+      );
 
-      formatter = forAllSystems (system:
+      formatter = forAllSystems (
+        system:
         let
           pkgs = import inputs.nixpkgs_stable { inherit system; };
         in
         pkgs.writeShellApplication {
           name = "normalise_nix";
-          runtimeInputs = with pkgs; [ nixpkgs-fmt statix ];
+          runtimeInputs = with pkgs; [
+            nixpkgs-fmt
+            statix
+          ];
           text = ''
             set -o xtrace
             nixpkgs-fmt "$@"
             statix fix "$@"
           '';
-        });
+        }
+      );
     };
 }
