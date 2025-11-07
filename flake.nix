@@ -1,21 +1,21 @@
 {
   description = "Yocto Project - Development Environment";
 
-  inputs.nixpkgs_23_11.url = "nixpkgs/release-23.11";
+  inputs.nixpkgs_stable.url = "nixpkgs/release-25.05";
   inputs.nixpkgs_19_09 = { url = "nixpkgs/release-19.09"; flake = false; };
 
   outputs = { self, ... }@inputs:
     let
       supportedSystems = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
-      forAllSystems = inputs.nixpkgs_23_11.lib.genAttrs supportedSystems;
+      forAllSystems = inputs.nixpkgs_stable.lib.genAttrs supportedSystems;
     in
     {
       devShells = forAllSystems (system:
         let
-          pkgs_23_11 = import inputs.nixpkgs_23_11 { inherit system; };
+          pkgs_stable = import inputs.nixpkgs_stable { inherit system; };
           pkgs_19_09 = import inputs.nixpkgs_19_09 { inherit system; };
           mkYoctoEnv =
-            { pkgsForInteractiveShell ? pkgs_23_11
+            { pkgsForInteractiveShell ? pkgs_stable
             , pkgsForYocto ? pkgsForInteractiveShell
             , withPython2 ? false
             , usesInclusiveLanguage ? true
@@ -30,6 +30,12 @@
         in
         {
           default = mkYoctoEnv { }; # Current master
+
+          whinlatter = self.devShells.${system}.default; # 5.3 - May 2025
+
+          walnascar = self.devShells.${system}.default; # 5.2 - May 2025
+
+          styhead = self.devShells.${system}.default; # 5.1 - October 2024
 
           scarthgap = self.devShells.${system}.default; # 5.0 -	April 2024
 
@@ -67,7 +73,7 @@
 
       formatter = forAllSystems (system:
         let
-          pkgs = import inputs.nixpkgs_23_11 { inherit system; };
+          pkgs = import inputs.nixpkgs_stable { inherit system; };
         in
         pkgs.writeShellApplication {
           name = "normalise_nix";
